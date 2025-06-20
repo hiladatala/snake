@@ -6,6 +6,7 @@ import torch.utils.data
 import imp
 import os
 from .collate_batch import make_collator
+from .medical.slices_segmentation import Dataset as CTSliceDataset
 
 
 torch.multiprocessing.set_sharing_strategy('file_system')
@@ -21,13 +22,41 @@ def _dataset_factory(data_source, task):
 def make_dataset(cfg, dataset_name, transforms, is_train=True):
     args = DatasetCatalog.get(dataset_name)
     data_source = args['id']
-    dataset = _dataset_factory(data_source, cfg.task)
+
+    # If using our special CT slice dataset
+    if data_source == 'medical':
+        scan_dir = args['data_root']
+        init_mask_dir = args['init_mask_root']
+        gt_mask_dir = args.get('gt_root', None)  # Only available during training
+        sub_folder = args.get('sub_folder', None)
+
+        dataset = CTSliceDataset(
+            scan_dir=scan_dir,
+            init_mask_dir=init_mask_dir,
+            gt_mask_dir=gt_mask_dir,
+            sub_folder = sub_folder,
+            is_train=is_train,
+            transforms=transforms
+        )
+        return dataset
+
+    # Fallback to default dynamic loader
+    dataset_cls = _dataset_factory(data_source, cfg.task)
     del args['id']
-    # args['cfg'] = cfg
-    # args['transforms'] = transforms
-    # args['is_train'] = is_train
-    dataset = dataset(**args)
+    dataset = dataset_cls(**args)
     return dataset
+
+
+# def make_dataset(cfg, dataset_name, transforms, is_train=True):
+#     args = DatasetCatalog.get(dataset_name)
+#     data_source = args['id']
+#     dataset = _dataset_factory(data_source, cfg.task)
+#     del args['id']
+#     # args['cfg'] = cfg
+#     # args['transforms'] = transforms
+#     # args['is_train'] = is_train
+#     dataset = dataset(**args)
+#     return dataset
 
 
 def make_data_sampler(dataset, shuffle):

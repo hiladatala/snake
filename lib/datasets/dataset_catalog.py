@@ -102,8 +102,26 @@ class DatasetCatalog(object):
             'data_root': 'data/kitti/testing/image_2',
             'ann_file': 'data/kitti/testing/instances_val.json',
             'split': 'mini'
+        },
+        'MedicalTrain': {
+            'id': 'medical',
+            'data_root': '/media/cilab/DATA/Hila/Data/MR_CT_hepatic_pairs',
+            'init_mask_root': '/media/cilab/DATA/Hila/experiments_and_results/results/segmentation/CT_liver_segmentation/segmentation_results/CT_liver_segmentation_smart-meadow-95',
+            'gt_root': '/media/cilab/DATA/Hila/Data/CT_hepatic_data_exp/CT_training/mask',
+            'sub_folder': 'no_contrast_ct',
+            # 'ann_file': 'data/ade20k/ade20k_instance_train.json',
+            'split': 'train'
+        },
+        'MedicalVal': {
+            'id': 'medical',
+            'data_root': '/media/cilab/DATA/Hila/Data/MR_CT_hepatic_pairs',
+            'init_mask_root': '/media/cilab/DATA/Hila/experiments_and_results/results/segmentation/CT_liver_segmentation/segmentation_results/CT_liver_segmentation_smart-meadow-95',
+            'sub_folder':'no_contrast_ct',
+            # 'ann_file': 'data/ade20k/ade20k_instance_val.json',
+            'split': 'val'
         }
     }
+
 
     @staticmethod
     def get(name):

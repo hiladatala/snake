@@ -5,8 +5,8 @@ import os
 cfg = CN()
 
 # model
-cfg.model = 'hello'
-cfg.model_dir = 'data/model'
+cfg.model = 'snake'
+cfg.model_dir = '/media/cilab/DATA/Hila/experiments_and_results/experiments/Deep_snake_experiments/model'
 
 # network
 cfg.network = 'dla_34'
@@ -29,10 +29,10 @@ cfg.resume = True
 # -----------------------------------------------------------------------------
 cfg.train = CN()
 
-cfg.train.dataset = 'CocoTrain'
+cfg.train.dataset = 'MedicalTrain'
 cfg.train.epoch = 140
 cfg.train.num_workers = 8
-
+cfg.train.sub_folder = 'no_contrat_ct'
 # use adam as default
 cfg.train.optim = 'adam'
 cfg.train.lr = 1e-4
@@ -47,15 +47,17 @@ cfg.train.batch_size = 4
 
 # test
 cfg.test = CN()
-cfg.test.dataset = 'CocoVal'
+cfg.train.sub_folder = 'no_contrat_ct'
+cfg.test.dataset = 'MedicalVal'
 cfg.test.batch_size = 1
 cfg.test.epoch = -1
 
+
 # recorder
-cfg.record_dir = 'data/record'
+cfg.record_dir = '/media/cilab/DATA/Hila/experiments_and_results/experiments/Deep_snake_experiments'
 
 # result
-cfg.result_dir = 'data/result'
+cfg.result_dir = '/media/cilab/DATA/Hila/experiments_and_results/results/segmentation/Deep_snake_segmentation'
 
 # evaluation
 cfg.skip_eval = False

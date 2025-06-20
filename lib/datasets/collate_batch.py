@@ -4,8 +4,9 @@ import numpy as np
 
 
 def snake_collator(batch):
+    batch = [b for b in batch if b is not None]
     ret = {'inp': default_collate([b['inp'] for b in batch])}
-
+    #ret = {'inp': default_collate([b['inp'] for b in batch if b is not None and 'inp' in b])}
     meta = default_collate([b['meta'] for b in batch])
     ret.update({'meta': meta})
 
@@ -16,20 +17,26 @@ def snake_collator(batch):
     ct_hm = default_collate([b['ct_hm'] for b in batch])
 
     batch_size = len(batch)
-    ct_num = torch.max(meta['ct_num'])
+    # ct_num = torch.max(meta['ct_num'])
+    ct_num = int(torch.max(meta['ct_num']))
     wh = torch.zeros([batch_size, ct_num, 2], dtype=torch.float)
     # reg = torch.zeros([batch_size, ct_num, 2], dtype=torch.float)
     ct_cls = torch.zeros([batch_size, ct_num], dtype=torch.int64)
     ct_ind = torch.zeros([batch_size, ct_num], dtype=torch.int64)
     ct_01 = torch.zeros([batch_size, ct_num], dtype=torch.uint8)
     for i in range(batch_size):
-        ct_01[i, :meta['ct_num'][i]] = 1
+        # ct_01[i, :meta['ct_num'][i]] = 1
+        ct_01[i, :int(meta['ct_num'][i])] = 1
 
     if ct_num != 0:
-        wh[ct_01] = torch.Tensor(sum([b['wh'] for b in batch], []))
+        wh[ct_01] = torch.cat([b['wh'] for b in batch], dim=0)
+        ct_cls[ct_01] = torch.cat([b['ct_cls'] for b in batch], dim=0)
+        ct_ind[ct_01] = torch.cat([b['ct_ind'] for b in batch], dim=0)
+
+        # wh[ct_01] = torch.Tensor(sum([b['wh'] for b in batch], []))
         # reg[ct_01] = torch.Tensor(sum([b['reg'] for b in batch], []))
-        ct_cls[ct_01] = torch.LongTensor(sum([b['ct_cls'] for b in batch], []))
-        ct_ind[ct_01] = torch.LongTensor(sum([b['ct_ind'] for b in batch], []))
+        # ct_cls[ct_01] = torch.LongTensor(sum([b['ct_cls'] for b in batch], []))
+        # ct_ind[ct_01] = torch.LongTensor(sum([b['ct_ind'] for b in batch], []))
 
     detection = {'ct_hm': ct_hm, 'wh': wh, 'ct_cls': ct_cls, 'ct_ind': ct_ind, 'ct_01': ct_01.float()}
     # detection = {'ct_hm': ct_hm, 'wh': wh, 'reg': reg, 'ct_cls': ct_cls, 'ct_ind': ct_ind, 'ct_01': ct_01.float()}
@@ -43,10 +50,16 @@ def snake_collator(batch):
     i_gt_4pys = torch.zeros([batch_size, ct_num, 4, 2], dtype=torch.float)
     c_gt_4pys = torch.zeros([batch_size, ct_num, 4, 2], dtype=torch.float)
     if ct_num != 0:
-        i_it_4pys[ct_01] = torch.Tensor(sum([b['i_it_4py'] for b in batch], []))
-        c_it_4pys[ct_01] = torch.Tensor(sum([b['c_it_4py'] for b in batch], []))
-        i_gt_4pys[ct_01] = torch.Tensor(sum([b['i_gt_4py'] for b in batch], []))
-        c_gt_4pys[ct_01] = torch.Tensor(sum([b['c_gt_4py'] for b in batch], []))
+        i_it_4pys[ct_01] = torch.Tensor(torch.stack([b['i_it_4py'].to(torch.float32) for b in batch], dim=0))
+        c_it_4pys[ct_01] = torch.Tensor(torch.stack([b['c_it_4py'].to(torch.float32) for b in batch], dim=0))
+        i_gt_4pys[ct_01] = torch.Tensor(torch.stack([b['i_gt_4py'].to(torch.float32) for b in batch], dim=0))
+        c_gt_4pys[ct_01] = torch.Tensor(torch.stack([b['c_gt_4py'].to(torch.float32) for b in batch], dim=0))
+
+        # i_it_4pys[ct_01] = torch.Tensor(sum([b['i_it_4py'] for b in batch], []))
+        # c_it_4pys[ct_01] = torch.Tensor(sum([b['c_it_4py'] for b in batch], []))
+        # i_gt_4pys[ct_01] = torch.Tensor(sum([b['i_gt_4py'] for b in batch], []))
+        # c_gt_4pys[ct_01] = torch.Tensor(sum([b['c_gt_4py'] for b in batch], []))
+
     init = {'i_it_4py': i_it_4pys, 'c_it_4py': c_it_4pys, 'i_gt_4py': i_gt_4pys, 'c_gt_4py': c_gt_4pys}
     ret.update(init)
 
@@ -56,10 +69,19 @@ def snake_collator(batch):
     i_gt_pys = torch.zeros([batch_size, ct_num, snake_config.gt_poly_num, 2], dtype=torch.float)
     c_gt_pys = torch.zeros([batch_size, ct_num, snake_config.gt_poly_num, 2], dtype=torch.float)
     if ct_num != 0:
-        i_it_pys[ct_01] = torch.Tensor(sum([b['i_it_py'] for b in batch], []))
-        c_it_pys[ct_01] = torch.Tensor(sum([b['c_it_py'] for b in batch], []))
-        i_gt_pys[ct_01] = torch.Tensor(sum([b['i_gt_py'] for b in batch], []))
-        c_gt_pys[ct_01] = torch.Tensor(sum([b['c_gt_py'] for b in batch], []))
+        i_it_pys[ct_01] = torch.Tensor(torch.stack([b['i_it_py'].to(torch.float32) for b in batch], dim=0))
+        c_it_pys[ct_01] = torch.Tensor(torch.stack([b['c_it_py'].to(torch.float32) for b in batch], dim=0))
+        i_gt_pys[ct_01] = torch.Tensor(torch.stack([b['i_gt_py'].to(torch.float32) for b in batch], dim=0))
+        c_gt_pys[ct_01] = torch.Tensor(torch.stack([b['c_gt_py'].to(torch.float32) for b in batch], dim=0))
+        # i_it_pys[ct_01] = torch.Tensor(sum([b['i_it_py'] for b in batch], []))
+        # c_it_pys[ct_01] = torch.Tensor(sum([b['c_it_py'] for b in batch], []))
+        # i_gt_pys[ct_01] = torch.Tensor(sum([b['i_gt_py'] for b in batch], []))
+        # c_gt_pys[ct_01] = torch.Tensor(sum([b['c_gt_py'] for b in batch], []))
+
+        # i_it_pys[ct_01] = torch.Tensor(sum([b['i_it_py'] for b in batch], []))
+        # c_it_pys[ct_01] = torch.Tensor(sum([b['c_it_py'] for b in batch], []))
+        # i_gt_pys[ct_01] = torch.Tensor(sum([b['i_gt_py'] for b in batch], []))
+        # c_gt_pys[ct_01] = torch.Tensor(sum([b['c_gt_py'] for b in batch], []))
     evolution = {'i_it_py': i_it_pys, 'c_it_py': c_it_pys, 'i_gt_py': i_gt_pys, 'c_gt_py': c_gt_pys}
     ret.update(evolution)
 

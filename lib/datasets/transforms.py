@@ -21,7 +21,8 @@ class Compose(object):
 
 class ToTensor(object):
     def __call__(self, img, kpts):
-        return img / 255., kpts
+        # return img / 255., kpts
+        return img, kpts
 
 
 class Normalize(object):
@@ -30,8 +31,8 @@ class Normalize(object):
         self.std = std
 
     def __call__(self, img, kpts):
-        img -= self.mean
-        img /= self.std
+        # img -= self.mean
+        # img /= self.std
         return img, kpts
 
 
